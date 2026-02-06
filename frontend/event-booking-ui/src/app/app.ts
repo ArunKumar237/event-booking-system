@@ -1,6 +1,5 @@
 import { Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { ApiService } from './api.service';
 
 @Component({
   selector: 'app-root',
@@ -14,10 +13,4 @@ import { ApiService } from './api.service';
 })
 export class App {
   protected readonly title = signal('event-booking-ui');
-
-  constructor(private readonly api: ApiService) {
-    this.api.getTimeslots().subscribe((response) => {
-      console.log('Timeslots response:', response);
-    });
-  }
 }
