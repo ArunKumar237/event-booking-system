@@ -26,7 +26,7 @@ class TimeSlot(models.Model):
 
 class UserPreference(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    categories = models.ManyToManyField("Category")
+    categories = models.ManyToManyField("EventCategory")
 
     def __str__(self):
         return f"{self.user.username} preferences"

@@ -33,4 +33,33 @@ export class ApiService {
       { withCredentials: true }
     );
   }
+
+  getPreferences() {
+    return this.http.get<number[]>(
+      `${this.baseUrl}preferences/`,
+      { withCredentials: true }
+    );
+  }
+
+  savePreferences(categories: number[]) {
+    return this.http.post(
+      `${this.baseUrl}preferences/`,
+      { categories },
+      { withCredentials: true }
+    );
+  }
+
+  getTimeslotsFiltered(start: string, end: string, category?: string) {
+
+    let url = `${this.baseUrl}timeslots/?start_date=${start}&end_date=${end}`;
+
+    if (category && category !== '') {
+      url += `&category=${category}`;
+    }
+
+    return this.http.get<any[]>(url, {
+      withCredentials: true
+    });
+  }
+
 }

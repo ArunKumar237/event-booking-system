@@ -1,4 +1,6 @@
 import { Routes } from '@angular/router';
-import { TimeslotsComponent } from './timeslots.component';
+import { CalendarComponent } from './calender/calendar.component';
 
-export const routes: Routes = [{ path: '', component: TimeslotsComponent }];
+export const routes: Routes = [
+    { path: '', component: CalendarComponent },
+];

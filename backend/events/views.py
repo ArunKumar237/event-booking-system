@@ -7,6 +7,9 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth import logout
 from .models import EventCategory, TimeSlot, UserPreference
 from .serializers import EventCategorySerializer, TimeSlotSerializer, UserPreferenceSerializer
+from datetime import datetime, time
+from django.utils.timezone import make_aware
+
 
 
 class CategoryListView(APIView):
@@ -30,15 +33,26 @@ class TimeSlotListView(APIView):
 
         start_date = request.query_params.get("start_date")
         end_date = request.query_params.get("end_date")
+
         if start_date and end_date:
             start = parse_date(start_date)
             end = parse_date(end_date)
+
             if not start or not end:
                 return Response(
                     {"detail": "Invalid start_date or end_date. Use YYYY-MM-DD."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            qs = qs.filter(start_time__date__gte=start, start_time__date__lte=end)
+
+            # ⭐ Convert date → timezone-aware datetime
+            start_dt = make_aware(datetime.combine(start, time.min))
+            end_dt = make_aware(datetime.combine(end, time.max))
+
+            qs = qs.filter(
+                start_time__gte=start_dt,
+                start_time__lte=end_dt
+            )
+
 
         qs = qs.order_by("start_time")
         serializer = TimeSlotSerializer(qs, many=True)

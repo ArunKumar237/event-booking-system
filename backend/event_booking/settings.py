@@ -44,6 +44,7 @@ CORS_ALLOW_HEADERS = [
 ]
 
 SESSION_COOKIE_SAMESITE = "Lax"
+USE_TZ = True
 
 
 # Application definition
