@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import EventCategory, TimeSlot
+from .models import EventCategory, TimeSlot, UserPreference
 from django.contrib.auth.models import User
 
 
@@ -29,3 +29,10 @@ class TimeSlotSerializer(serializers.ModelSerializer):
             "booked_by",
         )
         read_only_fields = ("booked_by",)
+
+# serializers.py
+
+class UserPreferenceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserPreference
+        fields = ("categories",)

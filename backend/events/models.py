@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.contrib.auth.models import User
 
 
 class EventCategory(models.Model):
@@ -22,3 +23,10 @@ class TimeSlot(models.Model):
 
     def __str__(self) -> str:
         return f"{self.category} | {self.start_time} - {self.end_time}"
+
+class UserPreference(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    categories = models.ManyToManyField("Category")
+
+    def __str__(self):
+        return f"{self.user.username} preferences"

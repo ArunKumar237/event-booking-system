@@ -8,6 +8,7 @@ from .views import (
     MeView,
     TimeSlotListView,
     UnsubscribeTimeSlotView,
+    UserPreferenceView,
 )
 
 urlpatterns = [
@@ -22,4 +23,5 @@ urlpatterns = [
         UnsubscribeTimeSlotView.as_view(),
         name="timeslot-unsubscribe",
     ),
+    path("preferences/", UserPreferenceView.as_view()),
 ]

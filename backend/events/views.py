@@ -5,8 +5,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import logout
-from .models import EventCategory, TimeSlot
-from .serializers import EventCategorySerializer, TimeSlotSerializer
+from .models import EventCategory, TimeSlot, UserPreference
+from .serializers import EventCategorySerializer, TimeSlotSerializer, UserPreferenceSerializer
 
 
 class CategoryListView(APIView):
@@ -112,3 +112,20 @@ class LogoutView(APIView):
     def post(self, request):
         logout(request)
         return Response({"detail": "Logged out"})
+
+# views.py
+
+class UserPreferenceView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        pref, _ = UserPreference.objects.get_or_create(user=request.user)
+        serializer = UserPreferenceSerializer(pref)
+        return Response(serializer.data)
+
+    def post(self, request):
+        pref, _ = UserPreference.objects.get_or_create(user=request.user)
+        serializer = UserPreferenceSerializer(pref, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
