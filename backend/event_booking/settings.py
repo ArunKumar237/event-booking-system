@@ -31,6 +31,20 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:4200',
 ]
 
+CORS_ALLOW_CREDENTIALS = True
+
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:4200',
+    ]
+
+CORS_ALLOW_HEADERS = [
+    "content-type",
+    "authorization",
+    "x-csrftoken",
+]
+
+SESSION_COOKIE_SAMESITE = "Lax"
+
 
 # Application definition
 

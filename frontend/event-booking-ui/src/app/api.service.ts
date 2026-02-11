@@ -1,28 +1,36 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { Timeslot } from './timeslot.model';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ApiService {
-  private readonly baseUrl = 'http://127.0.0.1:8000/api/';
+  private readonly baseUrl = 'http://localhost:8000/api/';
 
   constructor(private readonly http: HttpClient) {}
 
-  getCategories(): Observable<unknown> {
-    return this.http.get<unknown>(`${this.baseUrl}categories/`);
+  getTimeslots(): Observable<Timeslot[]> {
+    return this.http.get<Timeslot[]>(
+      `${this.baseUrl}timeslots/`,
+      { withCredentials: true }
+    );
   }
 
-  getTimeslots(): Observable<unknown> {
-    return this.http.get<unknown>(`${this.baseUrl}timeslots/`);
+  bookSlot(id: number): Observable<void> {
+    return this.http.post<void>(
+      `${this.baseUrl}timeslots/${id}/book/`,
+      {},
+      { withCredentials: true }
+    );
   }
 
-  bookTimeslot(id: number): Observable<unknown> {
-    return this.http.post<unknown>(`${this.baseUrl}timeslots/${id}/book/`, {});
-  }
-
-  unsubscribeTimeslot(id: number): Observable<unknown> {
-    return this.http.post<unknown>(`${this.baseUrl}timeslots/${id}/unsubscribe/`, {});
+  unsubscribeSlot(id: number): Observable<void> {
+    return this.http.post<void>(
+      `${this.baseUrl}timeslots/${id}/unsubscribe/`,
+      {},
+      { withCredentials: true }
+    );
   }
 }

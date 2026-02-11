@@ -1,6 +1,6 @@
 from rest_framework import serializers
-
 from .models import EventCategory, TimeSlot
+from django.contrib.auth.models import User
 
 
 class EventCategorySerializer(serializers.ModelSerializer):
@@ -9,8 +9,14 @@ class EventCategorySerializer(serializers.ModelSerializer):
         fields = ("id", "name")
 
 
+class UserBasicSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ("id", "username")
+
 class TimeSlotSerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source="category.name", read_only=True)
+    booked_by = UserBasicSerializer(read_only=True)
 
     class Meta:
         model = TimeSlot

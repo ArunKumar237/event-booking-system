@@ -1,0 +1,109 @@
+.container {
+  max-width: 900px;
+  margin: auto;
+  padding: 24px;
+  font-family: system-ui, sans-serif;
+}
+
+.title {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.grid {
+  display: grid;
+  gap: 20px;
+}
+
+.card {
+  border-radius: 12px;
+  padding: 18px;
+  background: #ffffff;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  transition: transform 0.15s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+}
+
+/* Header */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.category {
+  font-weight: 600;
+  font-size: 18px;
+}
+
+/* Status badges */
+.status {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status.available {
+  background: #e6f7ee;
+  color: #1a7f4b;
+}
+
+.status.booked {
+  background: #fdeaea;
+  color: #b42318;
+}
+
+/* Time */
+.time {
+  color: #555;
+  margin: 8px 0;
+}
+
+.dash {
+  margin: 0 6px;
+}
+
+/* User */
+.user {
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+/* Buttons */
+.btn {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.subscribe {
+  background: #2563eb;
+  color: white;
+}
+
+.subscribe:hover {
+  background: #1e4fd1;
+}
+
+.unsubscribe {
+  background: #f3f4f6;
+}
+
+.unsubscribe:hover {
+  background: #e5e7eb;
+}
+
+/* Loading */
+.loading {
+  text-align: center;
+  margin-top: 40px;
+  font-size: 18px;
+}

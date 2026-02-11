@@ -3,7 +3,8 @@ from django.utils.dateparse import parse_date
 from rest_framework import permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
+from django.contrib.auth import authenticate, login
+from django.contrib.auth import logout
 from .models import EventCategory, TimeSlot
 from .serializers import EventCategorySerializer, TimeSlotSerializer
 
@@ -81,3 +82,33 @@ class UnsubscribeTimeSlotView(APIView):
         slot.save(update_fields=["booked_by"])
         serializer = TimeSlotSerializer(slot)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
+class LoginView(APIView):
+
+    def post(self, request):
+        username = request.data.get("username")
+        password = request.data.get("password")
+
+        user = authenticate(username=username, password=password)
+
+        if user is None:
+            return Response({"detail": "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
+
+        login(request, user)
+
+        return Response({"detail": "Logged in"})
+
+class MeView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        return Response({
+            "id": request.user.id,
+            "username": request.user.username,
+        })
+
+class LogoutView(APIView):
+    def post(self, request):
+        logout(request)
+        return Response({"detail": "Logged out"})
