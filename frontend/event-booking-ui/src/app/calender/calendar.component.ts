@@ -4,7 +4,9 @@ import { ApiService } from '../api.service';
 import { FormsModule } from '@angular/forms';
 import { BehaviorSubject, combineLatest, switchMap, map } from 'rxjs';
 import { TimeslotCardComponent } from '../timeslot-card.component';
-import { Timeslot } from '../timeslot.model';
+import { AuthService } from '../auth.service';
+import { Router } from '@angular/router';
+
 
 @Component({
   standalone: true,
@@ -20,6 +22,21 @@ import { Timeslot } from '../timeslot.model';
       </h3>
 
       <div class="controls">
+        <div class="auth">
+
+          <ng-container *ngIf="auth.user$ | async as user; else loginBtn">
+
+            👤 {{ user.username }}
+
+            <button (click)="logout()">Logout</button>
+
+          </ng-container>
+
+          <ng-template #loginBtn>
+            <button (click)="goToLogin()">Login</button>
+          </ng-template>
+
+        </div>
         <button (click)="prevWeek()">Previous</button>
 
         <button class="today-btn" (click)="goToCurrentWeek()">
@@ -165,7 +182,12 @@ export class CalendarComponent {
     })
   );
 
-  constructor(private api: ApiService) {}
+  constructor(
+    private api: ApiService,
+    public auth: AuthService,
+    private router: Router
+  ) {}
+
 
   // ⭐ PURE FUNCTION
   private getWeekRangeFromDate(date: Date) {
@@ -209,4 +231,17 @@ export class CalendarComponent {
       this.refresh$.next();
     });
   }
+
+  goToLogin() {
+    this.router.navigate(['/login'], {
+      queryParams: { returnUrl: '/calendar' }
+    });
+  }
+
+  logout() {
+    this.auth.logout().subscribe(() => {
+      this.auth.loadUser(); // refresh auth state
+    });
+  }
+
 }

@@ -43,6 +43,8 @@ CORS_ALLOW_HEADERS = [
     "x-csrftoken",
 ]
 
+CSRF_COOKIE_SECURE = False
+CSRF_COOKIE_HTTPONLY = False
 SESSION_COOKIE_SAMESITE = "Lax"
 USE_TZ = True
 

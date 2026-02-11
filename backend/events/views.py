@@ -9,6 +9,8 @@ from .models import EventCategory, TimeSlot, UserPreference
 from .serializers import EventCategorySerializer, TimeSlotSerializer, UserPreferenceSerializer
 from datetime import datetime, time
 from django.utils.timezone import make_aware
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.utils.decorators import method_decorator
 
 
 
@@ -143,3 +145,11 @@ class UserPreferenceView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
+
+
+@method_decorator(ensure_csrf_cookie, name='dispatch')
+class CsrfView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        return Response({"detail": "CSRF cookie set"})

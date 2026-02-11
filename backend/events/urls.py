@@ -3,6 +3,7 @@ from django.urls import path
 from .views import (
     BookTimeSlotView,
     CategoryListView,
+    CsrfView,
     LoginView,
     LogoutView,
     MeView,
@@ -24,4 +25,5 @@ urlpatterns = [
         name="timeslot-unsubscribe",
     ),
     path("preferences/", UserPreferenceView.as_view()),
+    path("csrf/", CsrfView.as_view()),
 ]
