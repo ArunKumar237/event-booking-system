@@ -30,7 +30,6 @@ class TimeSlotSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ("booked_by",)
 
-# serializers.py
 
 class UserPreferenceSerializer(serializers.ModelSerializer):
     class Meta:

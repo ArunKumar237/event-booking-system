@@ -47,7 +47,6 @@ class TimeSlotListView(APIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            # ⭐ Convert date → timezone-aware datetime
             start_dt = make_aware(datetime.combine(start, time.min))
             end_dt = make_aware(datetime.combine(end, time.max))
 
@@ -133,7 +132,6 @@ class LogoutView(APIView):
         logout(request)
         return Response({"detail": "Logged out"})
 
-# views.py
 
 class UserPreferenceView(APIView):
     permission_classes = [permissions.IsAuthenticated]
