@@ -1,60 +1,79 @@
 # Event Booking System
 
 ## Overview
-Event Booking System is a full-stack web application for booking predefined event time slots in a weekly calendar view.  
-Users can set category preferences, filter slots, subscribe to available events, and unsubscribe from their own bookings.  
-The backend enforces booking integrity so each slot can be booked by only one user at a time.  
-The application uses session-based authentication and CSRF protection with a proxy-based frontend integration to keep requests same-origin during development.
+Event Booking System is a full-stack application for booking predefined event time slots in a weekly calendar view.
+It uses Django + DRF on the backend and Angular standalone components on the frontend.
 
-## Features
+Core capabilities include:
+- Session-based login/logout and CSRF-safe API access
+- Weekly timeslot browsing and booking
+- User preferences
+- Admin-only API module for user, booking, and timeslot management
 
-### User Features
-- Select event preferences across `Cat 1`, `Cat 2`, and `Cat 3`
-- View event slots in a weekly calendar
-- Filter slots by category
-- Subscribe to available slots
-- Unsubscribe from booked slots
-- See booked/unavailable slots and booking owner details
+## Implemented Features
 
-### Admin Features
-- Access Django Admin to manage event data
-- Add and maintain time slots
-- View all slots with category, start/end time, and booking owner
-- Manage users and categories
+### User APIs (`/api/`)
+- `POST /api/login/`
+- `GET /api/me/`
+- `POST /api/logout/`
+- `GET /api/csrf/`
+- `GET /api/categories/`
+- `GET /api/timeslots/`
+- `POST /api/timeslots/{id}/book/`
+- `POST /api/timeslots/{id}/unsubscribe/`
+- `GET /api/preferences/`
+- `POST /api/preferences/`
 
-### Security Highlights
-- CSRF protection enabled in Django middleware
-- Explicit CSRF cookie bootstrap endpoint (`/api/csrf/`)
-- Session-based authentication (`login`, `me`, `logout`)
-- Backend authorization checks prevent users from unsubscribing other users
-- Booking guard ensures only one user can book a slot at a time
-- Frontend uses relative API URLs (`/api/...`) instead of hardcoded absolute hosts
+### Admin APIs (`/api/admin/`)
+Protected with DRF `IsAdminUser` (staff/admin only):
+- `GET /api/admin/users/` (list users)
+- `PATCH /api/admin/users/{id}/` (activate/deactivate user)
+- `GET /api/admin/bookings/` (all bookings with user + timeslot info)
+- `GET /api/admin/timeslots/` (all timeslots admin view)
+
+### Booking Integrity
+- Booking/unsubscribe uses DB transactions with `select_for_update()` to prevent concurrent race issues.
+
+## Production Readiness (Implemented)
+- Environment-based settings via `python-decouple`
+  - `SECRET_KEY`
+  - `DEBUG`
+  - `ALLOWED_HOSTS`
+  - CORS/CSRF origin settings
+  - security toggles and API defaults
+- Secure production defaults/toggles:
+  - `SESSION_COOKIE_SECURE`
+  - `CSRF_COOKIE_SECURE`
+  - `SECURE_SSL_REDIRECT`
+  - `SECURE_HSTS_*`
+  - `X_FRAME_OPTIONS`, `SECURE_CONTENT_TYPE_NOSNIFF`, `SECURE_REFERRER_POLICY`
+- DRF defaults configured:
+  - `SessionAuthentication`
+  - Global pagination (`PageNumberPagination`, configurable page size)
+  - Optional throttling via env
+- Centralized DRF exception handling:
+  - standardized error response format:
+    - `{"status": "error", "message": "..."}`
+- Basic Django logging configuration for runtime and request errors.
 
 ## Tech Stack
-
 | Layer | Technology |
 |---|---|
-| Frontend | Angular 21 (standalone components), TypeScript, RxJS |
+| Frontend | Angular 21 (standalone), TypeScript, RxJS |
 | Backend | Django 6, Django REST Framework |
-| Database | SQLite (default for local development) |
-| API Docs | drf-yasg (Swagger/ReDoc endpoints configured) |
-| Auth | Django session authentication |
-| Security | Django CSRF middleware + same-origin proxy flow |
-| Tooling | npm, Angular CLI, Python venv |
+| DB | SQLite (default local) |
+| API Docs | drf-yasg (`/swagger/`, `/redoc/`) |
+| Auth | Django session auth + CSRF |
 
-## Architecture
-The frontend communicates with the backend using relative paths (`/api/...`) through an Angular proxy configuration. In local development, Angular runs on `localhost:4200` and proxies API traffic to Django on `localhost:8000`, avoiding cross-origin API URLs in client code.  
-Session cookies and CSRF cookies are sent with `withCredentials: true`, and the backend validates authentication/authorization for protected operations (booking, unsubscribe, preferences).
-
-## Getting Started
+## Local Setup
 
 ### Prerequisites
-- Node.js `20+`
-- npm `10+` (or compatible with your Node installation)
-- Python `3.12+`
-- `pip` and `venv`
+- Node.js 20+
+- npm
+- Python 3.12+
+- `venv` + `pip`
 
-### Backend Setup
+### Backend
 ```bash
 cd backend
 python -m venv ../venv
@@ -64,66 +83,60 @@ python -m venv ../venv
 # source ../venv/bin/activate
 
 pip install -r requirements.txt
+copy .env.example .env  # Windows
+# cp .env.example .env  # macOS/Linux
+
 python manage.py migrate
 python manage.py createsuperuser
 python manage.py runserver 8000
 ```
 
-### Frontend Setup
+### Frontend
 ```bash
 cd frontend/event-booking-ui
 npm install
 npm run start:proxy
 ```
 
-### Running the Application
+### URLs
 - Frontend: `http://localhost:4200`
-- Backend API: `http://localhost:8000`
-- Django Admin: `http://localhost:8000/admin`
-- Swagger UI: `http://localhost:8000/swagger/`
+- Backend: `http://localhost:8000`
+- Django Admin: `http://localhost:8000/admin/`
+- Swagger: `http://localhost:8000/swagger/`
+- ReDoc: `http://localhost:8000/redoc/`
 
-## API Notes
-- Frontend calls use relative URLs such as:
-  - `/api/timeslots/`
-  - `/api/timeslots/:id/book/`
-  - `/api/timeslots/:id/unsubscribe/`
-  - `/api/preferences/`
-- Proxy config (`proxy.conf.json`) forwards `/api` to `http://localhost:8000`.
-- This design keeps client code environment-friendly and avoids hardcoding backend origins.
+## Environment Variables
+See `backend/.env.example` for all supported keys.
 
-## Security Considerations
-- CSRF protection is active (`CsrfViewMiddleware`) and the frontend initializes CSRF cookie acquisition via `/api/csrf/`.
-- Session authentication is used for login state; authenticated endpoints require valid session cookies.
-- Authorization is enforced server-side:
-  - Users cannot unsubscribe bookings they do not own.
-  - Already-booked slots cannot be booked again.
-- Frontend API calls use relative paths and credentialed requests.
-- Production hardening should include environment-managed secrets and `DEBUG=False`.
+Key variables:
+- `DJANGO_ENV` (`development` or `production`)
+- `SECRET_KEY`
+- `DEBUG`
+- `ALLOWED_HOSTS`
+- `CORS_ALLOWED_ORIGINS`
+- `CSRF_TRUSTED_ORIGINS`
+- `API_PAGE_SIZE`
+- `DRF_THROTTLE_ANON_RATE`, `DRF_THROTTLE_USER_RATE`
+- `DJANGO_LOG_LEVEL`
 
 ## Project Structure
 ```text
 event-booking-system/
-+-- backend/
-�   +-- event_booking/          # Django project settings and root URLs
-�   +-- events/                 # Domain app: models, views, serializers, admin
-�   +-- manage.py
-�   +-- requirements.txt
-+-- frontend/
-�   +-- event-booking-ui/
-�       +-- src/app/            # Angular components/services
-�       +-- proxy.conf.json
-�       +-- angular.json
-�       +-- package.json
-+-- LICENSE
+|-- backend/
+|   |-- event_booking/          # Django project config
+|   |-- events/                 # Domain app (models/views/serializers/admin)
+|   |-- .env.example
+|   |-- manage.py
+|   `-- requirements.txt
+|-- frontend/
+|   `-- event-booking-ui/
+|       |-- src/app/
+|       |-- proxy.conf.json
+|       |-- angular.json
+|       `-- package.json
+`-- README.md
 ```
 
-## Possible Future Improvements
-1. Add Docker and `docker-compose` for reproducible local environments.
-2. Add CI/CD pipeline for linting, tests, and automated deploy checks.
-3. Introduce role-based access controls beyond Django admin defaults.
-4. Add pagination and server-side query optimizations for larger slot datasets.
-5. Expand automated test coverage (backend API + frontend component/service tests).
-6. Add caching strategy for frequently accessed calendar/category data.
-
-## Author
-`Panuganti Arun Kumar`
+## Notes
+- Existing user-facing API contract and behavior are preserved while adding admin and production readiness features.
+- Automated tests are currently minimal and should be expanded for stronger release confidence.
