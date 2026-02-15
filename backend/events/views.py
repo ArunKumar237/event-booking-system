@@ -43,7 +43,7 @@ class TimeSlotListView(APIView):
 
             if not start or not end:
                 return Response(
-                    {"detail": "Invalid start_date or end_date. Use YYYY-MM-DD."},
+                    {"status": "error", "message": "Invalid start_date or end_date. Use YYYY-MM-DD."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
@@ -70,7 +70,7 @@ class BookTimeSlotView(APIView):
             slot = get_object_or_404(TimeSlot.objects.select_for_update(), pk=pk)
             if slot.booked_by_id is not None:
                 return Response(
-                    {"detail": "This timeslot is already booked."},
+                    {"status": "error", "message": "This timeslot is already booked."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
             slot.booked_by = request.user
@@ -87,12 +87,12 @@ class UnsubscribeTimeSlotView(APIView):
             slot = get_object_or_404(TimeSlot.objects.select_for_update(), pk=pk)
             if slot.booked_by_id is None:
                 return Response(
-                    {"detail": "This timeslot is not booked."},
+                    {"status": "error", "message": "This timeslot is not booked."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
             if slot.booked_by_id != request.user.id:
                 return Response(
-                    {"detail": "You can only unsubscribe from your own booking."},
+                    {"status": "error", "message": "You can only unsubscribe from your own booking."},
                     status=status.HTTP_403_FORBIDDEN,
                 )
             slot.booked_by = None
@@ -110,7 +110,10 @@ class LoginView(APIView):
         user = authenticate(username=username, password=password)
 
         if user is None:
-            return Response({"detail": "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"status": "error", "message": "Invalid credentials"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         login(request, user)
 
