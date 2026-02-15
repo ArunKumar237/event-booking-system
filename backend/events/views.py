@@ -1,5 +1,6 @@
 from django.shortcuts import get_object_or_404
 from django.utils.dateparse import parse_date
+from django.db import transaction
 from rest_framework import permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -65,15 +66,15 @@ class BookTimeSlotView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, pk: int):
-        slot = get_object_or_404(TimeSlot, pk=pk)
-        if slot.booked_by_id is not None:
-            return Response(
-                {"detail": "This timeslot is already booked."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        slot.booked_by = request.user
-        slot.save(update_fields=["booked_by"])
+        with transaction.atomic():
+            slot = get_object_or_404(TimeSlot.objects.select_for_update(), pk=pk)
+            if slot.booked_by_id is not None:
+                return Response(
+                    {"detail": "This timeslot is already booked."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            slot.booked_by = request.user
+            slot.save(update_fields=["booked_by"])
         serializer = TimeSlotSerializer(slot)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -82,20 +83,20 @@ class UnsubscribeTimeSlotView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, pk: int):
-        slot = get_object_or_404(TimeSlot, pk=pk)
-        if slot.booked_by_id is None:
-            return Response(
-                {"detail": "This timeslot is not booked."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        if slot.booked_by_id != request.user.id:
-            return Response(
-                {"detail": "You can only unsubscribe from your own booking."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
-        slot.booked_by = None
-        slot.save(update_fields=["booked_by"])
+        with transaction.atomic():
+            slot = get_object_or_404(TimeSlot.objects.select_for_update(), pk=pk)
+            if slot.booked_by_id is None:
+                return Response(
+                    {"detail": "This timeslot is not booked."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            if slot.booked_by_id != request.user.id:
+                return Response(
+                    {"detail": "You can only unsubscribe from your own booking."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+            slot.booked_by = None
+            slot.save(update_fields=["booked_by"])
         serializer = TimeSlotSerializer(slot)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
